@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Sachin Bharambe — Robotics Software Engineer</title>
+<meta name="description" content="Senior Software Engineer at MathWorks with deep expertise in robotics, ROS, SLAM, computer vision, and embedded systems."/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #0a0e0f;
+    --bg2: #0f1416;
+    --bg3: #141a1c;
+    --surface: #1a2224;
+    --surface2: #202a2d;
+    --accent: #00e5c0;
+    --accent2: #ff6b35;
+    --accent3: #7eb8ff;
+    --text: #e8f0ee;
+    --muted: #7a9490;
+    --faint: #2a3a3d;
+    --border: #1e2e31;
+    --mono: 'Space Mono', monospace;
+    --sans: 'IBM Plex Sans', sans-serif;
+    --display: 'Syne', sans-serif;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; font-size: 16px; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-weight: 300;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* Grid overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,229,192,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,229,192,0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.1rem 2.5rem;
+    background: rgba(10,14,15,0.88);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-logo {
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    color: var(--accent);
+    letter-spacing: 0.12em;
+    text-decoration: none;
+  }
+  .nav-links {
+    display: flex;
+    gap: 2rem;
+    list-style: none;
+  }
+  .nav-links a {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    text-decoration: none;
+    text-transform: uppercase;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--accent); }
+
+  /* SECTIONS */
+  section { position: relative; z-index: 1; }
+
+  /* HERO */
+  #hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 8rem 2.5rem 4rem;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  .hero-tag {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--accent);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .hero-tag::before {
+    content: '';
+    display: inline-block;
+    width: 32px;
+    height: 1px;
+    background: var(--accent);
+  }
+  h1.hero-name {
+    font-family: var(--display);
+    font-size: clamp(3.2rem, 8vw, 7rem);
+    font-weight: 800;
+    line-height: 1.0;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    margin-bottom: 0.3rem;
+  }
+  h1.hero-name span { color: var(--accent); }
+  .hero-title {
+    font-family: var(--display);
+    font-size: clamp(1.1rem, 2.5vw, 1.6rem);
+    font-weight: 400;
+    color: var(--muted);
+    margin-bottom: 2rem;
+  }
+  .hero-desc {
+    font-size: 1rem;
+    color: var(--text);
+    max-width: 560px;
+    margin-bottom: 2.8rem;
+    line-height: 1.8;
+    font-weight: 300;
+  }
+  .hero-desc strong { color: var(--accent); font-weight: 500; }
+  .hero-links {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .btn {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.75rem 1.5rem;
+    border-radius: 3px;
+    text-decoration: none;
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: var(--bg);
+    font-weight: 700;
+    border: 1px solid var(--accent);
+  }
+  .btn-primary:hover { background: transparent; color: var(--accent); }
+  .btn-ghost {
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--faint);
+  }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* Floating stat chips */
+  .hero-stats {
+    display: flex;
+    gap: 1.2rem;
+    margin-top: 3.5rem;
+    flex-wrap: wrap;
+  }
+  .stat-chip {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 0.6rem 1.1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+  }
+  .stat-num {
+    font-family: var(--mono);
+    font-size: 1.4rem;
+    color: var(--accent);
+    font-weight: 700;
+    line-height: 1;
+  }
+  .stat-label {
+    font-size: 0.68rem;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  /* SECTION HEADERS */
+  .section-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 5rem 2.5rem;
+  }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 3rem;
+  }
+  .section-num {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    color: var(--accent);
+    letter-spacing: 0.15em;
+  }
+  .section-title {
+    font-family: var(--display);
+    font-size: clamp(1.6rem, 3vw, 2.2rem);
+    font-weight: 700;
+    color: var(--text);
+  }
+  .section-line {
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* SKILLS */
+  #skills { background: var(--bg2); }
+  .skills-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.2rem;
+  }
+  .skill-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1.5rem;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .skill-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .skill-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px; height: 100%;
+  }
+  .skill-card.robotics::before { background: var(--accent); }
+  .skill-card.software::before { background: var(--accent3); }
+  .skill-card.embedded::before { background: var(--accent2); }
+  .skill-card-title {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+  .skill-card.robotics .skill-card-title { color: var(--accent); }
+  .skill-card.software .skill-card-title { color: var(--accent3); }
+  .skill-card.embedded .skill-card-title { color: var(--accent2); }
+  .skill-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .tag {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    color: var(--muted);
+    background: var(--bg3);
+    border: 1px solid var(--faint);
+    border-radius: 2px;
+    padding: 0.25rem 0.6rem;
+    letter-spacing: 0.05em;
+  }
+
+  /* EXPERIENCE */
+  #experience { background: var(--bg); }
+  .timeline {
+    position: relative;
+    padding-left: 2rem;
+  }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 1px;
+    background: linear-gradient(to bottom, var(--accent), var(--faint));
+  }
+  .timeline-item {
+    position: relative;
+    margin-bottom: 2.8rem;
+    padding-left: 1.5rem;
+  }
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -2.44rem;
+    top: 0.45rem;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 2px solid var(--bg);
+    box-shadow: 0 0 8px var(--accent);
+  }
+  .timeline-item.faded::before { background: var(--muted); box-shadow: none; }
+  .tl-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.3rem;
+  }
+  .tl-role {
+    font-family: var(--display);
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .tl-company {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--accent);
+    letter-spacing: 0.08em;
+    margin-bottom: 0.15rem;
+  }
+  .tl-date {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    color: var(--muted);
+    white-space: nowrap;
+    padding-top: 0.2rem;
+  }
+  .tl-bullets {
+    margin-top: 0.6rem;
+    padding-left: 1rem;
+    list-style: none;
+  }
+  .tl-bullets li {
+    font-size: 0.9rem;
+    color: var(--muted);
+    margin-bottom: 0.35rem;
+    position: relative;
+    line-height: 1.6;
+  }
+  .tl-bullets li::before {
+    content: '›';
+    position: absolute;
+    left: -1rem;
+    color: var(--accent);
+  }
+  .tl-bullets li strong { color: var(--text); font-weight: 500; }
+
+  /* PROJECTS */
+  #projects { background: var(--bg2); }
+  .projects-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.2rem;
+  }
+  .project-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1.8rem;
+    transition: border-color 0.2s, transform 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .project-card:hover { border-color: var(--accent); transform: translateY(-3px); }
+  .project-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent), transparent);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .project-card:hover::after { opacity: 1; }
+  .project-type {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .project-type::before {
+    content: '';
+    display: inline-block;
+    width: 16px; height: 1px;
+    background: var(--accent);
+  }
+  .project-name {
+    font-family: var(--display);
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 0.7rem;
+  }
+  .project-desc {
+    font-size: 0.88rem;
+    color: var(--muted);
+    line-height: 1.7;
+    margin-bottom: 1.2rem;
+  }
+  .project-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  /* PUBLICATIONS & PATENTS */
+  #publications { background: var(--bg); }
+  .pub-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+  @media (max-width: 640px) { .pub-grid { grid-template-columns: 1fr; } }
+  .pub-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent3);
+    border-radius: 3px;
+    padding: 1.1rem 1.3rem;
+    font-size: 0.88rem;
+    color: var(--muted);
+    line-height: 1.6;
+    transition: border-left-color 0.2s;
+  }
+  .pub-item:hover { border-left-color: var(--accent); }
+  .pub-item.patent { border-left-color: var(--accent2); }
+  .pub-item.patent:hover { border-left-color: var(--accent); }
+  .pub-label {
+    font-family: var(--mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent3);
+    margin-bottom: 0.4rem;
+  }
+  .pub-item.patent .pub-label { color: var(--accent2); }
+
+  /* EDUCATION */
+  #education { background: var(--bg2); }
+  .edu-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1rem;
+  }
+  .edu-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1.5rem;
+    transition: border-color 0.2s;
+  }
+  .edu-card:hover { border-color: var(--accent); }
+  .edu-degree {
+    font-family: var(--display);
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 0.2rem;
+  }
+  .edu-school {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--accent);
+    letter-spacing: 0.05em;
+    margin-bottom: 0.15rem;
+  }
+  .edu-year {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    color: var(--muted);
+  }
+
+  /* CONTACT */
+  #contact { background: var(--bg); }
+  .contact-inner {
+    max-width: 680px;
+    margin: 0 auto;
+    text-align: center;
+    padding: 5rem 2.5rem;
+  }
+  .contact-heading {
+    font-family: var(--display);
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: 1rem;
+    line-height: 1.1;
+  }
+  .contact-heading span { color: var(--accent); }
+  .contact-sub {
+    font-size: 0.95rem;
+    color: var(--muted);
+    margin-bottom: 2.5rem;
+    line-height: 1.8;
+  }
+  .contact-links {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  /* FOOTER */
+  footer {
+    text-align: center;
+    padding: 1.5rem 2.5rem;
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    color: var(--faint);
+    border-top: 1px solid var(--border);
+    position: relative;
+    z-index: 1;
+  }
+
+  /* AWARD BADGE */
+  .award-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(255, 107, 53, 0.08);
+    border: 1px solid rgba(255, 107, 53, 0.25);
+    border-radius: 3px;
+    padding: 0.35rem 0.8rem;
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    color: var(--accent2);
+    letter-spacing: 0.06em;
+    margin-top: 0.8rem;
+  }
+  .award-badge::before { content: '★'; }
+
+  /* MOBILE */
+  @media (max-width: 640px) {
+    nav { padding: 1rem 1.2rem; }
+    .nav-links { gap: 1rem; }
+    .nav-links a { font-size: 0.65rem; }
+    #hero { padding: 7rem 1.2rem 3rem; }
+    .section-inner { padding: 3.5rem 1.2rem; }
+    .contact-inner { padding: 3.5rem 1.2rem; }
+  }
+
+  /* ANIMATIONS */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .anim { opacity: 0; }
+  .anim.visible { animation: fadeUp 0.6s ease forwards; }
+  .anim:nth-child(2) { animation-delay: 0.1s; }
+  .anim:nth-child(3) { animation-delay: 0.2s; }
+  .anim:nth-child(4) { animation-delay: 0.3s; }
+
+  /* cursor blink */
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+  .cursor { display: inline-block; width: 3px; height: 1em; background: var(--accent); margin-left: 4px; vertical-align: middle; animation: blink 1s step-end infinite; }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#hero" class="nav-logo">SB<span style="color:var(--muted)">_77</span></a>
+  <ul class="nav-links">
+    <li><a href="#skills">Skills</a></li>
+    <li><a href="#experience">Experience</a></li>
+    <li><a href="#projects">Projects</a></li>
+    <li><a href="#publications">Research</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-tag">Robotics × Software Engineering</div>
+  <h1 class="hero-name">Sachin<br/><span>Bharambe</span><span class="cursor"></span></h1>
+  <p class="hero-title">Principal Software Engineer · MathWorks</p>
+  <p class="hero-desc">
+    <strong>9+ years</strong> of software development at MathWorks on <strong>Embedded Coder</strong> within Simulink —
+    bringing a graduate research background in <strong>robotics, computer vision, and machine learning</strong> to
+    production-grade embedded code generation tools. 1 granted patent · 4 publications. Based in Natick, MA.
+  </p>
+  <div class="hero-links">
+    <a href="mailto:sachin77@vt.edu" class="btn btn-primary">Get in touch</a>
+    <a href="https://www.linkedin.com/in/sachinb77" target="_blank" rel="noopener" class="btn btn-ghost">LinkedIn</a>
+    <a href="#" class="btn btn-ghost" onclick="alert('Upload your resume PDF here and link it!')">Resume PDF ↓</a>
+  </div>
+  <div class="hero-stats">
+    <div class="stat-chip">
+      <span class="stat-num">9+</span>
+      <span class="stat-label">Years at MathWorks</span>
+    </div>
+    <div class="stat-chip">
+      <span class="stat-num">1</span>
+      <span class="stat-label">Granted patent</span>
+    </div>
+    <div class="stat-chip">
+      <span class="stat-num">4</span>
+      <span class="stat-label">Publications</span>
+    </div>
+    <div class="stat-chip">
+      <span class="stat-num">EC</span>
+      <span class="stat-label">Embedded Coder</span>
+    </div>
+  </div>
+  <div class="award-badge">Winner · TI India Analog Design Contest 2012–2013</div>
+</section>
+
+<!-- SKILLS -->
+<section id="skills">
+  <div class="section-inner">
+    <div class="section-header">
+      <span class="section-num">01</span>
+      <h2 class="section-title">Technical Skills</h2>
+      <div class="section-line"></div>
+    </div>
+    <div class="skills-grid">
+      <div class="skill-card embedded">
+        <div class="skill-card-title">Embedded Coder / Simulink</div>
+        <div class="skill-tags">
+          <span class="tag">Embedded Coder</span>
+          <span class="tag">Simulink</span>
+          <span class="tag">C/C++ Codegen</span>
+          <span class="tag">RTLinux</span>
+          <span class="tag">VxWorks RTOS</span>
+          <span class="tag">Zynq / FPGA</span>
+          <span class="tag">GPIO Control</span>
+          <span class="tag">CAN Protocol</span>
+          <span class="tag">LDRA</span>
+        </div>
+      </div>
+      <div class="skill-card robotics">
+        <div class="skill-card-title">Robotics (Academic &amp; Applied)</div>
+        <div class="skill-tags">
+          <span class="tag">ROS / ROS2</span>
+          <span class="tag">SLAM</span>
+          <span class="tag">Robotics System Toolbox</span>
+          <span class="tag">Kinematics</span>
+          <span class="tag">Motion Planning</span>
+          <span class="tag">Sensor Fusion</span>
+          <span class="tag">Kalman Filter</span>
+          <span class="tag">Perception</span>
+        </div>
+      </div>
+      <div class="skill-card software">
+        <div class="skill-card-title">Computer Vision &amp; ML</div>
+        <div class="skill-tags">
+          <span class="tag">Computer Vision</span>
+          <span class="tag">Machine Learning</span>
+          <span class="tag">Fish-eye Camera</span>
+          <span class="tag">3D Tracking</span>
+          <span class="tag">Face Localization</span>
+          <span class="tag">Embedded Vision</span>
+          <span class="tag">MATLAB</span>
+        </div>
+      </div>
+      <div class="skill-card software">
+        <div class="skill-card-title">Languages &amp; Tools</div>
+        <div class="skill-tags">
+          <span class="tag">C++</span>
+          <span class="tag">Python</span>
+          <span class="tag">MATLAB</span>
+          <span class="tag">OOP</span>
+          <span class="tag">TCP/IP</span>
+          <span class="tag">WebSockets</span>
+          <span class="tag">Qt GUI</span>
+          <span class="tag">Jira</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EXPERIENCE -->
+<section id="experience">
+  <div class="section-inner">
+    <div class="section-header">
+      <span class="section-num">02</span>
+      <h2 class="section-title">Experience</h2>
+      <div class="section-line"></div>
+    </div>
+    <div class="timeline">
+
+      <div class="timeline-item">
+        <div class="tl-header">
+          <div>
+            <div class="tl-company">MathWorks · Natick, MA</div>
+            <div class="tl-role">Principal Software Engineer — Embedded Coder / Simulink</div>
+          </div>
+          <div class="tl-date">May 2025 – Present</div>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="tl-header">
+          <div>
+            <div class="tl-company">MathWorks · Natick, MA</div>
+            <div class="tl-role">Senior Software Engineer — Embedded Coder / Simulink</div>
+          </div>
+          <div class="tl-date">May 2021 – May 2025</div>
+        </div>
+        <ul class="tl-bullets">
+          <li>Software development on the <strong>Embedded Coder</strong> product within Simulink — automatic C/C++ code generation for embedded targets</li>
+          <li>Developed <strong>SLAM feature demos</strong> for the Robotics System Toolbox and integrated with Simulink virtual environments</li>
+          <li>Optimized <strong>high-frequency GPIO control</strong> using RTLinux OS on Zynq board via Simulink code generation</li>
+          <li>Resolved <strong>highly complex technical issues</strong> for customers in robotics, computer vision, and embedded software domains</li>
+        </ul>
+      </div>
+
+      <div class="timeline-item">
+        <div class="tl-header">
+          <div>
+            <div class="tl-company">MathWorks · Greater Boston, MA</div>
+            <div class="tl-role">Software Engineer — Embedded Coder / Simulink</div>
+          </div>
+          <div class="tl-date">Dec 2018 – May 2021</div>
+        </div>
+        <ul class="tl-bullets">
+          <li>Software development on <strong>Embedded Coder</strong> within the Simulink product family</li>
+        </ul>
+      </div>
+
+      <div class="timeline-item">
+        <div class="tl-header">
+          <div>
+            <div class="tl-company">MathWorks · Greater Boston, MA</div>
+            <div class="tl-role">Engineering Development Group Engineer</div>
+          </div>
+          <div class="tl-date">Jul 2017 – Dec 2018</div>
+        </div>
+      </div>
+
+      <div class="timeline-item faded">
+        <div class="tl-header">
+          <div>
+            <div class="tl-company">Virginia Tech · Blacksburg, VA</div>
+            <div class="tl-role">Graduate Research Assistant — Mirror Worlds Project</div>
+          </div>
+          <div class="tl-date">2016 – 2017</div>
+        </div>
+        <ul class="tl-bullets">
+          <li>Achieved <strong>robust multi-camera tracking</strong> with fish-eye lenses using Kalman filter and WebSocket communication</li>
+          <li>Designed interactive portal for <strong>3D object manipulation</strong> via Kinect + Leap Motion with Oculus Rift immersion</li>
+        </ul>
+      </div>
+
+      <div class="timeline-item faded">
+        <div class="tl-header">
+          <div>
+            <div class="tl-company">The MathWorks · Internship</div>
+            <div class="tl-role">Robotics Software Engineer Intern</div>
+          </div>
+          <div class="tl-date">May – Aug 2016</div>
+        </div>
+      </div>
+
+      <div class="timeline-item faded">
+        <div class="tl-header">
+          <div>
+            <div class="tl-company">Larsen &amp; Toubro · Powai, India</div>
+            <div class="tl-role">Embedded Software Developer</div>
+          </div>
+          <div class="tl-date">Jun 2014 – Jul 2015</div>
+        </div>
+        <ul class="tl-bullets">
+          <li>System software for <strong>critical real-time systems</strong> in VxWorks RTOS; CAN protocol, TCP/IP, Qt GUI</li>
+          <li>Verification and validation using <strong>LDRA static analysis</strong></li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- PROJECTS -->
+<section id="projects">
+  <div class="section-inner">
+    <div class="section-header">
+      <span class="section-num">03</span>
+      <h2 class="section-title">Key Projects</h2>
+      <div class="section-line"></div>
+    </div>
+    <div class="projects-grid">
+
+      <div class="project-card">
+        <div class="project-type">Embedded Coder · Simulink</div>
+        <div class="project-name">Embedded C/C++ Code Generation</div>
+        <p class="project-desc">Software development on MathWorks' Embedded Coder product — enabling automatic, production-ready C and C++ code generation from Simulink models targeting embedded hardware platforms.</p>
+        <div class="project-tags">
+          <span class="tag">Embedded Coder</span><span class="tag">Simulink</span><span class="tag">C/C++</span><span class="tag">MATLAB</span>
+        </div>
+      </div>
+
+      <div class="project-card">
+        <div class="project-type">Robotics System Toolbox · Simulink</div>
+        <div class="project-name">SLAM Integration with Simulink</div>
+        <p class="project-desc">Developed real-time SLAM demonstrations for MathWorks' Robotics System Toolbox, integrating mapping algorithms with Simulink virtual environments for simulation and testing workflows.</p>
+        <div class="project-tags">
+          <span class="tag">SLAM</span><span class="tag">ROS</span><span class="tag">Simulink</span><span class="tag">MATLAB</span>
+        </div>
+      </div>
+
+      <div class="project-card">
+        <div class="project-type">Embedded / Real-Time</div>
+        <div class="project-name">RTLinux GPIO Optimization on Zynq</div>
+        <p class="project-desc">Optimized GPIO control at high-frequency interrupt using RTLinux OS on a Xilinx Zynq board, leveraging Simulink code generation for deterministic real-time performance.</p>
+        <div class="project-tags">
+          <span class="tag">RTLinux</span><span class="tag">Zynq</span><span class="tag">GPIO</span><span class="tag">Simulink Codegen</span>
+        </div>
+      </div>
+
+      <div class="project-card">
+        <div class="project-type">HRI / Research · Virginia Tech</div>
+        <div class="project-name">Mirror Worlds — Real-Virtual Platform</div>
+        <p class="project-desc">Built a real-virtual interaction platform using fish-eye cameras with Kalman tracking, WebSocket communication, and immersive 3D manipulation via Kinect, Leap Motion, and Oculus Rift.</p>
+        <div class="project-tags">
+          <span class="tag">Kalman Filter</span><span class="tag">Computer Vision</span><span class="tag">Oculus Rift</span><span class="tag">WebSockets</span>
+        </div>
+      </div>
+
+      <div class="project-card">
+        <div class="project-type">Patent · Assistive Robotics</div>
+        <div class="project-name">Assistive Navigation Device for the Visually Impaired</div>
+        <p class="project-desc">Patented assistive navigation system for no-visibility environments — one of two filed patents originating from research at VNIT and published in IEEE.</p>
+        <div class="project-tags">
+          <span class="tag">Android</span><span class="tag">Sensors</span><span class="tag">Assistive Tech</span><span class="tag">Patent</span>
+        </div>
+      </div>
+
+      <div class="project-card">
+        <div class="project-type">Patent · Modular Robotics</div>
+        <div class="project-name">ReBiS — Rapid Reconfigurable Modular Robot</div>
+        <p class="project-desc">Rapid Reconfigurable Bipedal Snake robot — a modular robotic platform capable of dynamic reconfiguration between locomotion modes. Filed patent and published research.</p>
+        <div class="project-tags">
+          <span class="tag">Modular Robotics</span><span class="tag">Bipedal</span><span class="tag">Locomotion</span><span class="tag">Patent</span>
+        </div>
+      </div>
+
+      <div class="project-card">
+        <div class="project-type">Critical Systems · L&amp;T</div>
+        <div class="project-name">RTOS System Software — Real-Time Control</div>
+        <p class="project-desc">Developed and validated system software for critical real-time systems using VxWorks RTOS at Larsen &amp; Toubro. Implemented CAN protocol, TCP/IP comms, and Qt GUI interfaces.</p>
+        <div class="project-tags">
+          <span class="tag">VxWorks</span><span class="tag">RTOS</span><span class="tag">CAN</span><span class="tag">TCP/IP</span><span class="tag">Qt</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- PUBLICATIONS & PATENTS -->
+<section id="publications">
+  <div class="section-inner">
+    <div class="section-header">
+      <span class="section-num">04</span>
+      <h2 class="section-title">Research &amp; Patents</h2>
+      <div class="section-line"></div>
+    </div>
+    <div class="pub-grid">
+      <div class="pub-item">
+        <div class="pub-label">Publication</div>
+        Substitute Eyes for Blind with Navigator Using Android
+      </div>
+      <div class="pub-item">
+        <div class="pub-label">Publication</div>
+        ReBiS — Reconfigurable Bipedal Snake
+      </div>
+      <div class="pub-item">
+        <div class="pub-label">Publication</div>
+        Smart Environment Based on Real-time Human Position Tracking for Remote Presence and Collaboration
+      </div>
+      <div class="pub-item">
+        <div class="pub-label">Publication</div>
+        Face Localization and its Implementation on Embedded Platform
+      </div>
+      <div class="pub-item patent">
+        <div class="pub-label">Patent · Granted</div>
+        Assistive Device for Navigation in the Dark or No-Visibility Ambience
+      </div>
+      <div class="pub-item patent">
+        <div class="pub-label">Patent · Filed</div>
+        Rapid Reconfigurable Modular Robot System
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EDUCATION -->
+<section id="education">
+  <div class="section-inner">
+    <div class="section-header">
+      <span class="section-num">05</span>
+      <h2 class="section-title">Education</h2>
+      <div class="section-line"></div>
+    </div>
+    <div class="edu-grid">
+      <div class="edu-card">
+        <div class="edu-degree">M.S. Computer Engineering</div>
+        <div class="edu-school">Virginia Tech (Virginia Polytechnic Institute)</div>
+        <div class="edu-year">2015 – 2017 · Blacksburg, VA</div>
+        <div class="award-badge" style="font-size:0.62rem;padding:0.25rem 0.6rem;margin-top:0.6rem;">Graduate Certificate in Data Analytics</div>
+      </div>
+      <div class="edu-card">
+        <div class="edu-degree">B.Tech. Electronics &amp; Communication Engineering</div>
+        <div class="edu-school">VNIT — Visvesvaraya National Institute of Technology</div>
+        <div class="edu-year">2010 – 2014 · Nagpur, India</div>
+        <div class="award-badge" style="font-size:0.62rem;padding:0.25rem 0.6rem;margin-top:0.6rem;">Winner · TI India Analog Design Contest 2012–2013</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="contact-inner">
+    <h2 class="contact-heading">Let's build<br/><span>robots together.</span></h2>
+    <p class="contact-sub">
+      Open to robotics software engineering roles — autonomous systems, perception, planning,
+      embedded robotics, and ROS-based platforms. Natick, MA · Open to hybrid &amp; remote.
+    </p>
+    <div class="contact-links">
+      <a href="mailto:sachin77@vt.edu" class="btn btn-primary">sachin77@vt.edu</a>
+      <a href="https://www.linkedin.com/in/sachinb77" target="_blank" rel="noopener" class="btn btn-ghost">LinkedIn ↗</a>
+      <a href="tel:+15404499859" class="btn btn-ghost">(540) 449-9859</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  &copy; 2026 Sachin Bharambe · Natick, MA · Built with HTML/CSS · Hosted on GitHub Pages + Cloudflare
+</footer>
+
+<script>
+  // Scroll-triggered fade-in
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.skill-card, .timeline-item, .project-card, .pub-item, .edu-card, .stat-chip')
+    .forEach(el => { el.classList.add('anim'); observer.observe(el); });
+</script>
+
+</body>
+</html>
