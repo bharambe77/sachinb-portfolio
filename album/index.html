@@ -26,25 +26,6 @@
       min-height: 100vh;
     }
 
-    /* ── Session banner ── */
-    #session-banner {
-      background: #1a1200;
-      border-bottom: 1px solid #3a2800;
-      padding: 10px 20px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-    #session-banner.connected { background: #001a12; border-color: #003d26; }
-    #session-banner span {
-      font-family: 'Space Mono', monospace;
-      font-size: 0.75rem;
-      color: var(--muted);
-      flex: 1;
-    }
-    #session-banner.connected span { color: var(--teal); }
-
     /* ── Header ── */
     header {
       position: sticky;
@@ -106,8 +87,6 @@
     .btn-primary { background: var(--teal); color: #000; }
     .btn-secondary { background: var(--surface); color: var(--text); border: 1px solid var(--border); }
     .btn-danger { background: transparent; color: var(--orange); border: 1px solid var(--orange); }
-    .btn-amber { background: transparent; color: #f59e0b; border: 1px solid #f59e0b; }
-
     .count-badge {
       font-family: 'Space Mono', monospace;
       font-size: 0.75rem;
@@ -222,31 +201,29 @@
       justify-content: center;
     }
 
-    /* Local sm thumbnail shown in lightbox — always works */
+    /* xl thumbnail in lightbox — local file, no auth needed */
     #lightbox-img {
-      max-width: min(90vw, 720px);
-      max-height: 70vh;
+      max-width: 92vw;
+      max-height: 82vh;
       border-radius: 4px;
       object-fit: contain;
       display: block;
-      image-rendering: auto;
+      transition: opacity 0.2s;
     }
+    #lightbox-img.loading { opacity: 0.2; }
 
-    /* Full-size hint overlay on the thumbnail */
-    #lightbox-fullsize-hint {
+    #lightbox-spinner {
       position: absolute;
-      bottom: 10px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(0,0,0,0.7);
-      color: var(--muted);
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
       font-family: 'Space Mono', monospace;
-      font-size: 0.68rem;
-      padding: 4px 10px;
-      border-radius: 4px;
-      white-space: nowrap;
-      pointer-events: none;
+      font-size: 0.8rem;
+      color: var(--muted);
+      letter-spacing: 0.05em;
     }
+    #lightbox-spinner.visible { display: flex; }
 
     #lightbox-footer {
       display: flex;
@@ -381,12 +358,6 @@
 </head>
 <body>
 
-<!-- Session activation banner -->
-<div id="session-banner">
-  <span id="session-status">⚠ Activate session to view full-size photos from the NAS album</span>
-  <button class="btn btn-amber" id="btn-activate">Activate session</button>
-</div>
-
 <header>
   <h1>// album selector</h1>
   <div class="header-controls">
@@ -408,17 +379,14 @@
   <button class="lb-nav" id="lb-next">›</button>
 
   <div id="lightbox-img-wrap">
-    <!-- Always shows local sm thumbnail — reliable, no auth needed -->
-    <img id="lightbox-img" alt="">
-    <div id="lightbox-fullsize-hint">preview · click "Open full size" for 1616×1080px from NAS</div>
+    <img id="lightbox-img" alt="" class="loading">
+    <div id="lightbox-spinner" class="visible">Loading…</div>
   </div>
 
   <div id="lightbox-footer">
     <span id="lightbox-filename"></span>
     <button class="btn btn-secondary" id="lb-select-btn">Mark as selected</button>
-    <!-- Opens xl thumbnail directly in new tab — top-level nav sends NAS cookie -->
-    <a id="lb-open-xl" class="btn btn-primary" target="_blank" rel="noopener">Open full size ↗</a>
-    <a id="lb-open-nas" class="btn btn-secondary" target="_blank" rel="noopener">NAS album ↗</a>
+    <a id="lb-open-nas" class="btn btn-secondary" target="_blank" rel="noopener">Open in NAS album ↗</a>
   </div>
 </div>
 
@@ -446,41 +414,6 @@
     return `${NAS_BASE}/webapi/entry.cgi?api=SYNO.Foto.Thumbnail&method=get&version=2` +
            `&id=${p.unit_id}&cache_key=${p.cache_key}&size=${size}&type=unit&_sharing_id=${SHARING_ID}`;
   }
-
-  // ── Session activation ──────────────────────────────────────────
-  let sessionActivated = localStorage.getItem('nas_session_activated') === '1';
-
-  function openActivationPopup() {
-    const w = 900, h = 640;
-    const left = Math.max(0, (screen.width - w) / 2);
-    const top  = Math.max(0, (screen.height - h) / 2);
-    const popup = window.open(NAS_ALBUM_URL, 'nas_session',
-      `width=${w},height=${h},left=${left},top=${top},toolbar=0,menubar=0,scrollbars=1`);
-    if (!popup) {
-      alert('Please allow the popup for this site, then click Activate again.');
-      return;
-    }
-    // Poll until popup is closed, then mark session active
-    const timer = setInterval(() => {
-      if (popup.closed) {
-        clearInterval(timer);
-        markSessionActive();
-      }
-    }, 500);
-  }
-
-  function markSessionActive() {
-    sessionActivated = true;
-    localStorage.setItem('nas_session_activated', '1');
-    const banner = document.getElementById('session-banner');
-    banner.classList.add('connected');
-    document.getElementById('session-status').textContent = '✓ Session active — full-size photos will load from NAS';
-    document.getElementById('btn-activate').textContent = 'Re-activate';
-  }
-
-  document.getElementById('btn-activate').addEventListener('click', openActivationPopup);
-
-  if (sessionActivated) markSessionActive();
 
   // ── Gallery ─────────────────────────────────────────────────────
   const PHOTOS_JSON  = 'photos.json';
@@ -574,16 +507,25 @@
     const p = photos[idx];
     currentIndex = idx;
 
-    // Show local sm thumbnail — always loads, no auth needed
-    const img = document.getElementById('lightbox-img');
-    img.src = `thumbs/${p.unit_id}.jpg`;
-    img.alt = p.filename;
+    const img     = document.getElementById('lightbox-img');
+    const spinner = document.getElementById('lightbox-spinner');
+
+    // Show spinner, fade out current image while loading
+    img.classList.add('loading');
+    spinner.classList.add('visible');
 
     document.getElementById('lightbox-filename').textContent = p.filename;
-
-    // "Open full size" opens xl thumbnail URL in new tab (top-level nav → NAS cookie is sent)
-    document.getElementById('lb-open-xl').href  = nasThumbUrl(p, 'xl');
     document.getElementById('lb-open-nas').href = NAS_ALBUM_URL;
+
+    // Load local xl thumbnail (1616×1080px) — no auth needed
+    const newImg = new Image();
+    newImg.onload = () => {
+      img.src = newImg.src;
+      img.alt = p.filename;
+      img.classList.remove('loading');
+      spinner.classList.remove('visible');
+    };
+    newImg.src = `thumbs_xl/${p.unit_id}.jpg`;
 
     // Select/unmark toggle
     const selBtn = document.getElementById('lb-select-btn');
