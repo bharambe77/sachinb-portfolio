@@ -17,7 +17,6 @@
       --orange: #ff6b35;
       --text: #e8e8e8;
       --muted: #666;
-      --selected-border: 3px solid var(--teal);
     }
 
     body {
@@ -27,12 +26,31 @@
       min-height: 100vh;
     }
 
+    /* ── Session banner ── */
+    #session-banner {
+      background: #1a1200;
+      border-bottom: 1px solid #3a2800;
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    #session-banner.connected { background: #001a12; border-color: #003d26; }
+    #session-banner span {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--muted);
+      flex: 1;
+    }
+    #session-banner.connected span { color: var(--teal); }
+
     /* ── Header ── */
     header {
       position: sticky;
       top: 0;
       z-index: 100;
-      background: rgba(10,10,10,0.92);
+      background: rgba(10,10,10,0.95);
       backdrop-filter: blur(12px);
       border-bottom: 1px solid var(--border);
       padding: 14px 24px;
@@ -81,13 +99,14 @@
       cursor: pointer;
       border: none;
       transition: opacity 0.15s, transform 0.1s;
+      white-space: nowrap;
     }
     .btn:active { transform: scale(0.97); }
     .btn:disabled { opacity: 0.35; cursor: default; }
-
     .btn-primary { background: var(--teal); color: #000; }
     .btn-secondary { background: var(--surface); color: var(--text); border: 1px solid var(--border); }
     .btn-danger { background: transparent; color: var(--orange); border: 1px solid var(--orange); }
+    .btn-amber { background: transparent; color: #f59e0b; border: 1px solid #f59e0b; }
 
     .count-badge {
       font-family: 'Space Mono', monospace;
@@ -110,7 +129,6 @@
       aspect-ratio: 3/2;
       overflow: hidden;
       border-radius: 4px;
-      cursor: pointer;
       border: 3px solid transparent;
       transition: border-color 0.15s, transform 0.15s;
     }
@@ -122,29 +140,48 @@
       height: 100%;
       object-fit: cover;
       display: block;
-      transition: opacity 0.2s;
     }
 
     .photo-card .overlay {
       position: absolute;
       inset: 0;
-      background: rgba(0,0,0,0.45);
+      background: rgba(0,0,0,0.5);
       opacity: 0;
       transition: opacity 0.15s;
       display: flex;
       align-items: flex-end;
+      justify-content: space-between;
       padding: 8px;
+      gap: 6px;
     }
     .photo-card:hover .overlay { opacity: 1; }
-    .photo-card.selected .overlay { opacity: 1; background: rgba(0,212,170,0.12); }
+    .photo-card.selected .overlay { opacity: 1; background: rgba(0,212,170,0.1); }
 
     .photo-card .filename {
       font-family: 'Space Mono', monospace;
-      font-size: 0.65rem;
+      font-size: 0.62rem;
       color: #fff;
       word-break: break-all;
       line-height: 1.3;
+      flex: 1;
+      cursor: pointer;
     }
+
+    /* View full button inside card */
+    .btn-view-full {
+      flex-shrink: 0;
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.3);
+      color: #fff;
+      border-radius: 4px;
+      padding: 4px 8px;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.6rem;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.15s;
+    }
+    .btn-view-full:hover { background: rgba(0,212,170,0.4); border-color: var(--teal); }
 
     .check-icon {
       position: absolute;
@@ -157,9 +194,119 @@
       display: none;
       align-items: center;
       justify-content: center;
+      pointer-events: none;
     }
     .photo-card.selected .check-icon { display: flex; }
     .check-icon svg { width: 13px; height: 13px; }
+
+    /* ── Lightbox ── */
+    #lightbox {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.92);
+      z-index: 500;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 16px;
+    }
+    #lightbox.open { display: flex; }
+
+    #lightbox-img-wrap {
+      position: relative;
+      max-width: 90vw;
+      max-height: 80vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #lightbox-img {
+      max-width: 90vw;
+      max-height: 78vh;
+      border-radius: 4px;
+      object-fit: contain;
+      display: block;
+    }
+
+    #lightbox-spinner {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    #lightbox-error {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      padding: 32px;
+      text-align: center;
+    }
+    #lightbox-error p {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.82rem;
+      color: var(--muted);
+      max-width: 420px;
+      line-height: 1.7;
+    }
+
+    #lightbox-footer {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    #lightbox-filename {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.8rem;
+      color: var(--teal);
+    }
+
+    #lightbox-close {
+      position: fixed;
+      top: 16px;
+      right: 20px;
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-size: 1.6rem;
+      cursor: pointer;
+      line-height: 1;
+      z-index: 510;
+    }
+    #lightbox-close:hover { color: var(--text); }
+
+    /* nav arrows */
+    .lb-nav {
+      position: fixed;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      color: #fff;
+      border-radius: 50%;
+      width: 44px;
+      height: 44px;
+      font-size: 1.2rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s;
+      z-index: 510;
+    }
+    .lb-nav:hover { background: rgba(0,212,170,0.2); }
+    #lb-prev { left: 12px; }
+    #lb-next { right: 12px; }
 
     /* ── Selection panel ── */
     #selection-panel {
@@ -192,19 +339,10 @@
       color: var(--teal);
       flex: 1;
     }
-    .panel-toggle {
-      font-size: 1rem;
-      color: var(--muted);
-      user-select: none;
-      transition: transform 0.2s;
-    }
+    .panel-toggle { font-size: 1rem; color: var(--muted); user-select: none; transition: transform 0.2s; }
     #selection-panel.collapsed .panel-toggle { transform: rotate(180deg); }
 
-    .panel-body {
-      overflow-y: auto;
-      padding: 16px 20px;
-      flex: 1;
-    }
+    .panel-body { overflow-y: auto; padding: 16px 20px; flex: 1; }
 
     #selection-list {
       font-family: 'Space Mono', monospace;
@@ -215,12 +353,7 @@
       word-break: break-all;
     }
 
-    .empty-msg {
-      color: var(--muted);
-      font-family: 'Space Mono', monospace;
-      font-size: 0.8rem;
-      font-style: italic;
-    }
+    .empty-msg { color: var(--muted); font-family: 'Space Mono', monospace; font-size: 0.8rem; font-style: italic; }
 
     /* ── Toast ── */
     #toast {
@@ -242,21 +375,26 @@
     }
     #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-    /* ── Scrollbar ── */
     ::-webkit-scrollbar { width: 6px; }
     ::-webkit-scrollbar-track { background: var(--bg); }
     ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 
-    /* bottom padding so last photos aren't hidden behind panel */
     .gallery-wrapper { padding-bottom: 52px; }
 
     @media (max-width: 480px) {
       .gallery { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 3px; padding: 8px; }
       header { padding: 10px 12px; }
+      .lb-nav { display: none; }
     }
   </style>
 </head>
 <body>
+
+<!-- Session activation banner -->
+<div id="session-banner">
+  <span id="session-status">⚠ Activate session to view full-size photos from the NAS album</span>
+  <button class="btn btn-amber" id="btn-activate">Activate session</button>
+</div>
 
 <header>
   <h1>// album selector</h1>
@@ -270,6 +408,29 @@
 
 <div class="gallery-wrapper">
   <div class="gallery" id="gallery"></div>
+</div>
+
+<!-- Lightbox -->
+<div id="lightbox">
+  <button id="lightbox-close" title="Close (Esc)">✕</button>
+  <button class="lb-nav" id="lb-prev">‹</button>
+  <button class="lb-nav" id="lb-next">›</button>
+
+  <div id="lightbox-img-wrap">
+    <img id="lightbox-img" alt="" style="display:none;">
+    <div id="lightbox-spinner">Loading…</div>
+    <div id="lightbox-error">
+      <p>Could not load full-size image from NAS.<br>
+         Click <strong>Activate session</strong> in the banner, wait for the album to load in the popup, then close it and try again.</p>
+      <button class="btn btn-amber" onclick="openActivationPopup()">Activate session</button>
+    </div>
+  </div>
+
+  <div id="lightbox-footer">
+    <span id="lightbox-filename"></span>
+    <button class="btn btn-secondary" id="lb-select-btn">Mark as selected</button>
+    <a id="lb-open-nas" class="btn btn-secondary" target="_blank" rel="noopener">Open in NAS album ↗</a>
+  </div>
 </div>
 
 <!-- Selection panel -->
@@ -288,15 +449,58 @@
 <div id="toast">Copied to clipboard!</div>
 
 <script>
-  const PHOTOS_JSON = 'photos.json';
-  let photos = [];
-  let selected = new Set();
+  const NAS_BASE   = 'https://onenorthbase.synology.me:5001';
+  const SHARING_ID = 'ispNzaoIn';
+  const NAS_ALBUM_URL = `${NAS_BASE}/mo/sharing/${SHARING_ID}`;
 
-  // Restore from localStorage
-  const STORAGE_KEY = 'album_selection_v1';
-  function saveToStorage() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify([...selected]));
+  function nasThumbUrl(p, size = 'xl') {
+    return `${NAS_BASE}/webapi/entry.cgi?api=SYNO.Foto.Thumbnail&method=get&version=2` +
+           `&id=${p.unit_id}&cache_key=${p.cache_key}&size=${size}&type=unit&_sharing_id=${SHARING_ID}`;
   }
+
+  // ── Session activation ──────────────────────────────────────────
+  let sessionActivated = localStorage.getItem('nas_session_activated') === '1';
+
+  function openActivationPopup() {
+    const w = 900, h = 640;
+    const left = Math.max(0, (screen.width - w) / 2);
+    const top  = Math.max(0, (screen.height - h) / 2);
+    const popup = window.open(NAS_ALBUM_URL, 'nas_session',
+      `width=${w},height=${h},left=${left},top=${top},toolbar=0,menubar=0,scrollbars=1`);
+    if (!popup) {
+      alert('Please allow the popup for this site, then click Activate again.');
+      return;
+    }
+    // Poll until popup is closed, then mark session active
+    const timer = setInterval(() => {
+      if (popup.closed) {
+        clearInterval(timer);
+        markSessionActive();
+      }
+    }, 500);
+  }
+
+  function markSessionActive() {
+    sessionActivated = true;
+    localStorage.setItem('nas_session_activated', '1');
+    const banner = document.getElementById('session-banner');
+    banner.classList.add('connected');
+    document.getElementById('session-status').textContent = '✓ Session active — full-size photos will load from NAS';
+    document.getElementById('btn-activate').textContent = 'Re-activate';
+  }
+
+  document.getElementById('btn-activate').addEventListener('click', openActivationPopup);
+
+  if (sessionActivated) markSessionActive();
+
+  // ── Gallery ─────────────────────────────────────────────────────
+  const PHOTOS_JSON  = 'photos.json';
+  const STORAGE_KEY  = 'album_selection_v1';
+  let photos   = [];
+  let selected = new Set();
+  let currentIndex = 0;
+
+  function saveToStorage() { localStorage.setItem(STORAGE_KEY, JSON.stringify([...selected])); }
   function loadFromStorage() {
     try { return new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')); }
     catch { return new Set(); }
@@ -305,9 +509,7 @@
   async function init() {
     const res = await fetch(PHOTOS_JSON);
     photos = await res.json();
-
     selected = loadFromStorage();
-
     renderGallery();
     updateUI();
   }
@@ -315,10 +517,11 @@
   function renderGallery() {
     const gallery = document.getElementById('gallery');
     gallery.innerHTML = '';
-    photos.forEach(p => {
+    photos.forEach((p, idx) => {
       const card = document.createElement('div');
       card.className = 'photo-card' + (selected.has(p.unit_id) ? ' selected' : '');
       card.dataset.uid = p.unit_id;
+      card.dataset.idx = idx;
 
       const img = document.createElement('img');
       img.src = `thumbs/${p.unit_id}.jpg`;
@@ -327,10 +530,19 @@
 
       const overlay = document.createElement('div');
       overlay.className = 'overlay';
+
       const fname = document.createElement('span');
       fname.className = 'filename';
-      fname.textContent = p.filename.replace(/\.[^.]+$/, ''); // strip extension
+      fname.textContent = p.filename.replace(/\.[^.]+$/, '');
+
+      const viewBtn = document.createElement('button');
+      viewBtn.className = 'btn-view-full';
+      viewBtn.textContent = '⤢ view';
+      viewBtn.title = 'View full size from NAS';
+      viewBtn.addEventListener('click', (e) => { e.stopPropagation(); openLightbox(idx); });
+
       overlay.appendChild(fname);
+      overlay.appendChild(viewBtn);
 
       const check = document.createElement('div');
       check.className = 'check-icon';
@@ -340,76 +552,126 @@
       card.appendChild(overlay);
       card.appendChild(check);
 
+      // Click card body = toggle select; click view btn = lightbox (handled above)
       card.addEventListener('click', () => togglePhoto(p.unit_id, card));
       gallery.appendChild(card);
     });
   }
 
   function togglePhoto(uid, card) {
-    if (selected.has(uid)) {
-      selected.delete(uid);
-      card.classList.remove('selected');
-    } else {
-      selected.add(uid);
-      card.classList.add('selected');
-    }
+    if (selected.has(uid)) { selected.delete(uid); card.classList.remove('selected'); }
+    else                   { selected.add(uid);    card.classList.add('selected'); }
     saveToStorage();
     updateUI();
   }
 
-  function updateUI() {
-    const count = selected.size;
-    document.getElementById('sel-count').textContent = count;
+  // ── Lightbox ─────────────────────────────────────────────────────
+  function openLightbox(idx) {
+    currentIndex = idx;
+    document.getElementById('lightbox').classList.add('open');
+    document.body.style.overflow = 'hidden';
+    loadLightboxPhoto(idx);
+  }
 
+  function closeLightbox() {
+    document.getElementById('lightbox').classList.remove('open');
+    document.body.style.overflow = '';
+    const img = document.getElementById('lightbox-img');
+    img.src = '';
+    img.style.display = 'none';
+  }
+
+  function loadLightboxPhoto(idx) {
+    const p = photos[idx];
+    currentIndex = idx;
+
+    // Reset state
+    const img     = document.getElementById('lightbox-img');
+    const spinner = document.getElementById('lightbox-spinner');
+    const errBox  = document.getElementById('lightbox-error');
+    img.style.display = 'none';
+    spinner.style.display = 'flex';
+    errBox.style.display  = 'none';
+
+    document.getElementById('lightbox-filename').textContent = p.filename;
+    document.getElementById('lb-open-nas').href = NAS_ALBUM_URL;
+
+    // Update select button state
+    const selBtn = document.getElementById('lb-select-btn');
+    selBtn.textContent = selected.has(p.unit_id) ? 'Unmark' : 'Mark as selected';
+    selBtn.onclick = () => {
+      const card = document.querySelector(`.photo-card[data-uid="${p.unit_id}"]`);
+      if (card) togglePhoto(p.unit_id, card);
+      selBtn.textContent = selected.has(p.unit_id) ? 'Unmark' : 'Mark as selected';
+    };
+
+    // Load xl thumbnail from NAS
+    const url = nasThumbUrl(p, 'xl');
+    img.onload  = () => { spinner.style.display = 'none'; img.style.display = 'block'; errBox.style.display = 'none'; };
+    img.onerror = () => { spinner.style.display = 'none'; img.style.display = 'none'; errBox.style.display = 'flex'; };
+    img.src = url;
+  }
+
+  document.getElementById('lightbox-close').addEventListener('click', closeLightbox);
+  document.getElementById('lb-prev').addEventListener('click', () => {
+    if (currentIndex > 0) loadLightboxPhoto(currentIndex - 1);
+  });
+  document.getElementById('lb-next').addEventListener('click', () => {
+    if (currentIndex < photos.length - 1) loadLightboxPhoto(currentIndex + 1);
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (!document.getElementById('lightbox').classList.contains('open')) return;
+    if (e.key === 'Escape') closeLightbox();
+    if (e.key === 'ArrowLeft'  && currentIndex > 0)              loadLightboxPhoto(currentIndex - 1);
+    if (e.key === 'ArrowRight' && currentIndex < photos.length - 1) loadLightboxPhoto(currentIndex + 1);
+  });
+
+  // Close lightbox on backdrop click
+  document.getElementById('lightbox').addEventListener('click', (e) => {
+    if (e.target === document.getElementById('lightbox')) closeLightbox();
+  });
+
+  // ── Selection UI ─────────────────────────────────────────────────
+  function updateUI() {
+    const count  = selected.size;
+    document.getElementById('sel-count').textContent = count;
     const hasSel = count > 0;
     ['btn-copy','btn-copy-2','btn-deselect-all','btn-deselect-all-2'].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.disabled = !hasSel;
     });
-
-    // Build selection list text
     const listEl = document.getElementById('selection-list');
     if (!hasSel) {
       listEl.innerHTML = '<span class="empty-msg">No photos selected yet. Click photos to mark them.</span>';
       return;
     }
-
     const selPhotos = photos.filter(p => selected.has(p.unit_id));
     const name = document.getElementById('your-name').value.trim() || 'Anonymous';
-    const lines = [
-      `Selection by: ${name}`,
+    listEl.textContent = buildListText(selPhotos, name);
+  }
+
+  function buildListText(selPhotos, name) {
+    return [
+      `Selection by: ${name || 'Anonymous'}`,
       `Date: ${new Date().toLocaleDateString()}`,
       `Count: ${selPhotos.length} photos`,
       '─'.repeat(32),
-      ...selPhotos.map((p, i) => `${String(i+1).padStart(3, ' ')}. ${p.filename}`),
-    ];
-    listEl.textContent = lines.join('\n');
-
-    // Auto-expand panel if collapsed when selections exist
-    const panel = document.getElementById('selection-panel');
-    if (panel.classList.contains('collapsed') && hasSel) {
-      // Don't auto-open — let user control it
-    }
+      ...selPhotos.map((p, i) => `${String(i+1).padStart(3,' ')}. ${p.filename}`),
+    ].join('\n');
   }
 
   function getListText() {
     const selPhotos = photos.filter(p => selected.has(p.unit_id));
-    const name = document.getElementById('your-name').value.trim() || 'Anonymous';
-    return [
-      `Selection by: ${name}`,
-      `Date: ${new Date().toLocaleDateString()}`,
-      `Count: ${selPhotos.length} photos`,
-      '─'.repeat(32),
-      ...selPhotos.map((p, i) => `${String(i+1).padStart(3, ' ')}. ${p.filename}`),
-    ].join('\n');
+    return buildListText(selPhotos, document.getElementById('your-name').value.trim());
   }
 
   function copyList() {
     if (!selected.size) return;
-    navigator.clipboard.writeText(getListText()).then(() => showToast()).catch(() => {
-      // Fallback
+    const text = getListText();
+    navigator.clipboard.writeText(text).then(showToast).catch(() => {
       const ta = document.createElement('textarea');
-      ta.value = getListText();
+      ta.value = text;
       document.body.appendChild(ta);
       ta.select();
       document.execCommand('copy');
@@ -431,9 +693,8 @@
     updateUI();
   }
 
-  // Panel toggle
   document.getElementById('panel-toggle-btn').addEventListener('click', (e) => {
-    if (e.target.tagName === 'BUTTON') return; // don't toggle when clicking buttons inside
+    if (e.target.tagName === 'BUTTON') return;
     document.getElementById('selection-panel').classList.toggle('collapsed');
   });
 
