@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Album — Select Your Photos</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0a;
+      --surface: #111111;
+      --border: #1e1e1e;
+      --teal: #00d4aa;
+      --orange: #ff6b35;
+      --text: #e8e8e8;
+      --muted: #666;
+      --selected-border: 3px solid var(--teal);
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Syne', sans-serif;
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(10,10,10,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    header h1 {
+      font-family: 'Space Mono', monospace;
+      font-size: 1rem;
+      color: var(--teal);
+      letter-spacing: 0.05em;
+      flex: 1;
+      min-width: 160px;
+    }
+
+    .header-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .name-input {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 7px 12px;
+      border-radius: 6px;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.8rem;
+      width: 160px;
+      transition: border-color 0.2s;
+    }
+    .name-input:focus { outline: none; border-color: var(--teal); }
+    .name-input::placeholder { color: var(--muted); }
+
+    .btn {
+      padding: 7px 14px;
+      border-radius: 6px;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.75rem;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      transition: opacity 0.15s, transform 0.1s;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn:disabled { opacity: 0.35; cursor: default; }
+
+    .btn-primary { background: var(--teal); color: #000; }
+    .btn-secondary { background: var(--surface); color: var(--text); border: 1px solid var(--border); }
+    .btn-danger { background: transparent; color: var(--orange); border: 1px solid var(--orange); }
+
+    .count-badge {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+    .count-badge span { color: var(--teal); font-weight: 700; }
+
+    /* ── Gallery grid ── */
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 4px;
+      padding: 16px;
+    }
+
+    .photo-card {
+      position: relative;
+      aspect-ratio: 3/2;
+      overflow: hidden;
+      border-radius: 4px;
+      cursor: pointer;
+      border: 3px solid transparent;
+      transition: border-color 0.15s, transform 0.15s;
+    }
+    .photo-card:hover { transform: scale(1.02); }
+    .photo-card.selected { border-color: var(--teal); }
+
+    .photo-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: opacity 0.2s;
+    }
+
+    .photo-card .overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      opacity: 0;
+      transition: opacity 0.15s;
+      display: flex;
+      align-items: flex-end;
+      padding: 8px;
+    }
+    .photo-card:hover .overlay { opacity: 1; }
+    .photo-card.selected .overlay { opacity: 1; background: rgba(0,212,170,0.12); }
+
+    .photo-card .filename {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.65rem;
+      color: #fff;
+      word-break: break-all;
+      line-height: 1.3;
+    }
+
+    .check-icon {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 22px;
+      height: 22px;
+      background: var(--teal);
+      border-radius: 50%;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+    .photo-card.selected .check-icon { display: flex; }
+    .check-icon svg { width: 13px; height: 13px; }
+
+    /* ── Selection panel ── */
+    #selection-panel {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      transition: transform 0.25s ease;
+      z-index: 200;
+      max-height: 60vh;
+      display: flex;
+      flex-direction: column;
+    }
+    #selection-panel.collapsed { transform: translateY(calc(100% - 44px)); }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 20px;
+      cursor: pointer;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .panel-header h2 {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.85rem;
+      color: var(--teal);
+      flex: 1;
+    }
+    .panel-toggle {
+      font-size: 1rem;
+      color: var(--muted);
+      user-select: none;
+      transition: transform 0.2s;
+    }
+    #selection-panel.collapsed .panel-toggle { transform: rotate(180deg); }
+
+    .panel-body {
+      overflow-y: auto;
+      padding: 16px 20px;
+      flex: 1;
+    }
+
+    #selection-list {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.8rem;
+      line-height: 2;
+      color: var(--text);
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    .empty-msg {
+      color: var(--muted);
+      font-family: 'Space Mono', monospace;
+      font-size: 0.8rem;
+      font-style: italic;
+    }
+
+    /* ── Toast ── */
+    #toast {
+      position: fixed;
+      bottom: 56px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--teal);
+      color: #000;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.8rem;
+      font-weight: 700;
+      padding: 10px 20px;
+      border-radius: 8px;
+      opacity: 0;
+      transition: opacity 0.2s, transform 0.2s;
+      pointer-events: none;
+      z-index: 300;
+    }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    /* bottom padding so last photos aren't hidden behind panel */
+    .gallery-wrapper { padding-bottom: 52px; }
+
+    @media (max-width: 480px) {
+      .gallery { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 3px; padding: 8px; }
+      header { padding: 10px 12px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>// album selector</h1>
+  <div class="header-controls">
+    <input class="name-input" id="your-name" type="text" placeholder="Your name" maxlength="40">
+    <span class="count-badge"><span id="sel-count">0</span> selected</span>
+    <button class="btn btn-secondary" id="btn-deselect-all" disabled>Clear all</button>
+    <button class="btn btn-primary" id="btn-copy" disabled>Copy list</button>
+  </div>
+</header>
+
+<div class="gallery-wrapper">
+  <div class="gallery" id="gallery"></div>
+</div>
+
+<!-- Selection panel -->
+<div id="selection-panel" class="collapsed">
+  <div class="panel-header" id="panel-toggle-btn">
+    <h2>Selected photos</h2>
+    <span class="panel-toggle">▲</span>
+    <button class="btn btn-danger" id="btn-deselect-all-2" style="font-size:0.7rem;padding:5px 10px;" disabled>Clear</button>
+    <button class="btn btn-primary" id="btn-copy-2" style="font-size:0.7rem;padding:5px 10px;" disabled>Copy</button>
+  </div>
+  <div class="panel-body">
+    <div id="selection-list"><span class="empty-msg">No photos selected yet. Click photos to mark them.</span></div>
+  </div>
+</div>
+
+<div id="toast">Copied to clipboard!</div>
+
+<script>
+  const PHOTOS_JSON = 'photos.json';
+  let photos = [];
+  let selected = new Set();
+
+  // Restore from localStorage
+  const STORAGE_KEY = 'album_selection_v1';
+  function saveToStorage() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify([...selected]));
+  }
+  function loadFromStorage() {
+    try { return new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')); }
+    catch { return new Set(); }
+  }
+
+  async function init() {
+    const res = await fetch(PHOTOS_JSON);
+    photos = await res.json();
+
+    selected = loadFromStorage();
+
+    renderGallery();
+    updateUI();
+  }
+
+  function renderGallery() {
+    const gallery = document.getElementById('gallery');
+    gallery.innerHTML = '';
+    photos.forEach(p => {
+      const card = document.createElement('div');
+      card.className = 'photo-card' + (selected.has(p.unit_id) ? ' selected' : '');
+      card.dataset.uid = p.unit_id;
+
+      const img = document.createElement('img');
+      img.src = `thumbs/${p.unit_id}.jpg`;
+      img.alt = p.filename;
+      img.loading = 'lazy';
+
+      const overlay = document.createElement('div');
+      overlay.className = 'overlay';
+      const fname = document.createElement('span');
+      fname.className = 'filename';
+      fname.textContent = p.filename.replace(/\.[^.]+$/, ''); // strip extension
+      overlay.appendChild(fname);
+
+      const check = document.createElement('div');
+      check.className = 'check-icon';
+      check.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+
+      card.appendChild(img);
+      card.appendChild(overlay);
+      card.appendChild(check);
+
+      card.addEventListener('click', () => togglePhoto(p.unit_id, card));
+      gallery.appendChild(card);
+    });
+  }
+
+  function togglePhoto(uid, card) {
+    if (selected.has(uid)) {
+      selected.delete(uid);
+      card.classList.remove('selected');
+    } else {
+      selected.add(uid);
+      card.classList.add('selected');
+    }
+    saveToStorage();
+    updateUI();
+  }
+
+  function updateUI() {
+    const count = selected.size;
+    document.getElementById('sel-count').textContent = count;
+
+    const hasSel = count > 0;
+    ['btn-copy','btn-copy-2','btn-deselect-all','btn-deselect-all-2'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.disabled = !hasSel;
+    });
+
+    // Build selection list text
+    const listEl = document.getElementById('selection-list');
+    if (!hasSel) {
+      listEl.innerHTML = '<span class="empty-msg">No photos selected yet. Click photos to mark them.</span>';
+      return;
+    }
+
+    const selPhotos = photos.filter(p => selected.has(p.unit_id));
+    const name = document.getElementById('your-name').value.trim() || 'Anonymous';
+    const lines = [
+      `Selection by: ${name}`,
+      `Date: ${new Date().toLocaleDateString()}`,
+      `Count: ${selPhotos.length} photos`,
+      '─'.repeat(32),
+      ...selPhotos.map((p, i) => `${String(i+1).padStart(3, ' ')}. ${p.filename}`),
+    ];
+    listEl.textContent = lines.join('\n');
+
+    // Auto-expand panel if collapsed when selections exist
+    const panel = document.getElementById('selection-panel');
+    if (panel.classList.contains('collapsed') && hasSel) {
+      // Don't auto-open — let user control it
+    }
+  }
+
+  function getListText() {
+    const selPhotos = photos.filter(p => selected.has(p.unit_id));
+    const name = document.getElementById('your-name').value.trim() || 'Anonymous';
+    return [
+      `Selection by: ${name}`,
+      `Date: ${new Date().toLocaleDateString()}`,
+      `Count: ${selPhotos.length} photos`,
+      '─'.repeat(32),
+      ...selPhotos.map((p, i) => `${String(i+1).padStart(3, ' ')}. ${p.filename}`),
+    ].join('\n');
+  }
+
+  function copyList() {
+    if (!selected.size) return;
+    navigator.clipboard.writeText(getListText()).then(() => showToast()).catch(() => {
+      // Fallback
+      const ta = document.createElement('textarea');
+      ta.value = getListText();
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      showToast();
+    });
+  }
+
+  function showToast() {
+    const t = document.getElementById('toast');
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2000);
+  }
+
+  function deselectAll() {
+    selected.clear();
+    document.querySelectorAll('.photo-card.selected').forEach(c => c.classList.remove('selected'));
+    saveToStorage();
+    updateUI();
+  }
+
+  // Panel toggle
+  document.getElementById('panel-toggle-btn').addEventListener('click', (e) => {
+    if (e.target.tagName === 'BUTTON') return; // don't toggle when clicking buttons inside
+    document.getElementById('selection-panel').classList.toggle('collapsed');
+  });
+
+  document.getElementById('btn-copy').addEventListener('click', copyList);
+  document.getElementById('btn-copy-2').addEventListener('click', copyList);
+  document.getElementById('btn-deselect-all').addEventListener('click', deselectAll);
+  document.getElementById('btn-deselect-all-2').addEventListener('click', deselectAll);
+  document.getElementById('your-name').addEventListener('input', updateUI);
+
+  init();
+</script>
+</body>
+</html>
