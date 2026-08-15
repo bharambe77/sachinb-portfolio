@@ -498,9 +498,6 @@
   function closeLightbox() {
     document.getElementById('lightbox').classList.remove('open');
     document.body.style.overflow = '';
-    const img = document.getElementById('lightbox-img');
-    img.src = '';
-    img.style.display = 'none';
   }
 
   function loadLightboxPhoto(idx) {
@@ -511,6 +508,7 @@
     const spinner = document.getElementById('lightbox-spinner');
 
     // Show spinner, fade out current image while loading
+    img.style.display = '';   // clear any stale inline display
     img.classList.add('loading');
     spinner.classList.add('visible');
 
