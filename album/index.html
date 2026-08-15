@@ -222,39 +222,30 @@
       justify-content: center;
     }
 
+    /* Local sm thumbnail shown in lightbox — always works */
     #lightbox-img {
-      max-width: 90vw;
-      max-height: 78vh;
+      max-width: min(90vw, 720px);
+      max-height: 70vh;
       border-radius: 4px;
       object-fit: contain;
       display: block;
+      image-rendering: auto;
     }
 
-    #lightbox-spinner {
+    /* Full-size hint overlay on the thumbnail */
+    #lightbox-fullsize-hint {
       position: absolute;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: 'Space Mono', monospace;
-      font-size: 0.8rem;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.7);
       color: var(--muted);
-    }
-
-    #lightbox-error {
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      gap: 12px;
-      padding: 32px;
-      text-align: center;
-    }
-    #lightbox-error p {
       font-family: 'Space Mono', monospace;
-      font-size: 0.82rem;
-      color: var(--muted);
-      max-width: 420px;
-      line-height: 1.7;
+      font-size: 0.68rem;
+      padding: 4px 10px;
+      border-radius: 4px;
+      white-space: nowrap;
+      pointer-events: none;
     }
 
     #lightbox-footer {
@@ -417,19 +408,17 @@
   <button class="lb-nav" id="lb-next">›</button>
 
   <div id="lightbox-img-wrap">
-    <img id="lightbox-img" alt="" style="display:none;">
-    <div id="lightbox-spinner">Loading…</div>
-    <div id="lightbox-error">
-      <p>Could not load full-size image from NAS.<br>
-         Click <strong>Activate session</strong> in the banner, wait for the album to load in the popup, then close it and try again.</p>
-      <button class="btn btn-amber" onclick="openActivationPopup()">Activate session</button>
-    </div>
+    <!-- Always shows local sm thumbnail — reliable, no auth needed -->
+    <img id="lightbox-img" alt="">
+    <div id="lightbox-fullsize-hint">preview · click "Open full size" for 1616×1080px from NAS</div>
   </div>
 
   <div id="lightbox-footer">
     <span id="lightbox-filename"></span>
     <button class="btn btn-secondary" id="lb-select-btn">Mark as selected</button>
-    <a id="lb-open-nas" class="btn btn-secondary" target="_blank" rel="noopener">Open in NAS album ↗</a>
+    <!-- Opens xl thumbnail directly in new tab — top-level nav sends NAS cookie -->
+    <a id="lb-open-xl" class="btn btn-primary" target="_blank" rel="noopener">Open full size ↗</a>
+    <a id="lb-open-nas" class="btn btn-secondary" target="_blank" rel="noopener">NAS album ↗</a>
   </div>
 </div>
 
@@ -585,18 +574,18 @@
     const p = photos[idx];
     currentIndex = idx;
 
-    // Reset state
-    const img     = document.getElementById('lightbox-img');
-    const spinner = document.getElementById('lightbox-spinner');
-    const errBox  = document.getElementById('lightbox-error');
-    img.style.display = 'none';
-    spinner.style.display = 'flex';
-    errBox.style.display  = 'none';
+    // Show local sm thumbnail — always loads, no auth needed
+    const img = document.getElementById('lightbox-img');
+    img.src = `thumbs/${p.unit_id}.jpg`;
+    img.alt = p.filename;
 
     document.getElementById('lightbox-filename').textContent = p.filename;
+
+    // "Open full size" opens xl thumbnail URL in new tab (top-level nav → NAS cookie is sent)
+    document.getElementById('lb-open-xl').href  = nasThumbUrl(p, 'xl');
     document.getElementById('lb-open-nas').href = NAS_ALBUM_URL;
 
-    // Update select button state
+    // Select/unmark toggle
     const selBtn = document.getElementById('lb-select-btn');
     selBtn.textContent = selected.has(p.unit_id) ? 'Unmark' : 'Mark as selected';
     selBtn.onclick = () => {
@@ -604,12 +593,6 @@
       if (card) togglePhoto(p.unit_id, card);
       selBtn.textContent = selected.has(p.unit_id) ? 'Unmark' : 'Mark as selected';
     };
-
-    // Load xl thumbnail from NAS
-    const url = nasThumbUrl(p, 'xl');
-    img.onload  = () => { spinner.style.display = 'none'; img.style.display = 'block'; errBox.style.display = 'none'; };
-    img.onerror = () => { spinner.style.display = 'none'; img.style.display = 'none'; errBox.style.display = 'flex'; };
-    img.src = url;
   }
 
   document.getElementById('lightbox-close').addEventListener('click', closeLightbox);
